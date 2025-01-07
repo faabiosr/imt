@@ -1,0 +1,98 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+project_name: imt
+
+before:
+  hooks:
+    - go mod tidy
+    - make clean
+
+builds:
+  - id: imt
+    main: './'
+    binary: imt
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - 386
+      - amd64
+    goarm:
+      - 7
+    ignore:
+      - goos: windows
+        goarch: arm
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    flags:
+      - -trimpath
+    ldflags:
+      - "-s"
+      - "-w"
+      - "-X github.com/faabiosr/imt/cmd.releaseVersion={{ .Version }}"
+      - "-X github.com/faabiosr/imt/cmd.releaseCommit={{ .ShortCommit }}"
+      - "-X github.com/faabiosr/imt/cmd.releaseOS={{ .Os }}/{{ .Arch }}"
+
+archives:
+  - id: imt
+    format: tar.gz
+    builds:
+      - imt
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version}}_
+      {{- if eq .Os "darwin" }}macos_
+      {{- else }}{{ .Os }}_{{ end }}
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else if eq .Arch "arm64" }}aarch64
+      {{- else if eq .Arch "arm" }}armv{{ .Arm }}
+      {{- else }}{{ .Arch }}{{ end }}
+    wrap_in_directory: true
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+
+nfpms:
+  - id: imt
+    builds:
+      - imt
+    package_name: imt
+    file_name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- if eq .Os "darwin" }}macos_
+      {{- else }}{{ .Os }}_{{ end }}
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else if eq .Arch "arm64" }}aarch64
+      {{- else if eq .Arch "arm" }}armv{{ .Arm }}
+      {{- else }}{{ .Arch }}{{ end }}
+    vendor: Fabio Ribeiro
+    homepage:  https://fabioribeiro.dev
+    maintainer: Fabio Ribeiro <me@fabioribeiro.dev>
+    description: A collection of command-line tools for Immich.
+    license: MIT
+    bindir: /usr/bin
+    section: utils
+    formats:
+      - deb
+      - rpm
+    rpm:
+      group: Development/Tools
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'

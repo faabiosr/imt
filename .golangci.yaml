@@ -1,0 +1,35 @@
+---
+run:
+  timeout: "120s"
+
+output:
+  formats: "colored-line-number"
+
+linters:
+  enable:
+    - gocyclo
+    - unconvert
+    - goimports
+    - unused
+    - misspell
+    - nakedret
+    - errcheck
+    - revive
+    - ineffassign
+    - goconst
+    - govet
+    - unparam
+    - gofumpt
+    - prealloc
+    - mnd
+    - gocritic
+
+
+linters-settings:
+  revive:
+    rules:
+      - name: package-comments
+        disabled: true
+
+issues:
+  exclude-use-default: false
