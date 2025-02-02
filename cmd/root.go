@@ -88,6 +88,8 @@ func newCmd() *ucli.App {
 		return nil
 	}
 
+	app.Commands = commands(loginCmd, logoutCmd)
+
 	return app
 }
 
