@@ -38,7 +38,8 @@ builds:
 
 archives:
   - id: imt
-    format: tar.gz
+    formats:
+      - tar.gz
     builds:
       - imt
     name_template: >-
@@ -54,7 +55,8 @@ archives:
     wrap_in_directory: true
     format_overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
     files:
       - README.md
       - LICENSE
