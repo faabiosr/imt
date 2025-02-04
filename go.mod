@@ -3,6 +3,7 @@ module github.com/faabiosr/imt
 go 1.23.4
 
 require (
+	github.com/docker/go-units v0.5.0
 	github.com/jarcoal/httpmock v1.3.1
 	github.com/pterm/pterm v0.12.80
 	github.com/urfave/cli/v2 v2.27.5

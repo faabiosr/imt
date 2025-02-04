@@ -10,9 +10,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/faabiosr/imt/internal/cli"
 	"github.com/pterm/pterm"
 	ucli "github.com/urfave/cli/v2"
+
+	"github.com/faabiosr/imt/internal/cli"
+	"github.com/faabiosr/imt/internal/client"
 )
 
 // Execute runs root cmd.
@@ -104,7 +106,7 @@ func newCmd() *ucli.App {
 		return nil
 	}
 
-	app.Commands = commands(loginCmd, logoutCmd)
+	app.Commands = commands(loginCmd, logoutCmd, infoCmd)
 
 	return app
 }
@@ -128,4 +130,23 @@ func must(s string, err error) string {
 	}
 
 	return s
+}
+
+// action represents urfave/cli.ActionFunc.
+type action func(*ucli.Context, *client.Client) error
+
+// withClient wraps action func with internal/client.
+func withClient(fn action) ucli.ActionFunc {
+	return func(cc *ucli.Context) error {
+		creds, err := cli.Session(cc.String("config"))
+		if err != nil {
+			return err
+		}
+		cl, err := client.New(creds.Host, creds.Key)
+		if err != nil {
+			return err
+		}
+
+		return fn(cc, cl)
+	}
 }
