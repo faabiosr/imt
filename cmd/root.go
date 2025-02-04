@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/faabiosr/imt/internal/cli"
 	ucli "github.com/urfave/cli/v2"
 )
 
@@ -81,6 +82,15 @@ func newCmd() *ucli.App {
 		}
 	}
 
+	app.Flags = []ucli.Flag{
+		&ucli.StringFlag{
+			Name:    "config",
+			Aliases: []string{"c"},
+			Usage:   "imt config auth file",
+			Value:   must(cli.DefaultCredentialsPath()),
+		},
+	}
+
 	app.Action = func(cc *ucli.Context) error {
 		tpl := fmt.Sprintf(rootCommandTemplate, helpHeaderTemplate)
 		ucli.HelpPrinterCustom(cc.App.Writer, tpl, cc.App, nil)
@@ -102,4 +112,14 @@ func commands(cmds ...*ucli.Command) []*ucli.Command {
 	}
 
 	return cmds
+}
+
+// must is a helper that wraps a cal to a function returns (string, error)
+// and panics if the error is non-nil.
+func must(s string, err error) string {
+	if err != nil {
+		panic(err)
+	}
+
+	return s
 }
