@@ -36,3 +36,8 @@ func Unwrap(err error) error {
 func Errorf(format string, a ...any) error {
 	return fmt.Errorf(format, a...)
 }
+
+// Join calls the standard library's errors.Join function.
+func Join(errs ...error) error {
+	return errors.Join(errs...)
+}
