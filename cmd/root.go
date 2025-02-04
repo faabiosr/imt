@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/faabiosr/imt/internal/cli"
+	"github.com/pterm/pterm"
 	ucli "github.com/urfave/cli/v2"
 )
 
@@ -89,6 +90,11 @@ func newCmd() *ucli.App {
 			Usage:   "imt config auth file",
 			Value:   must(cli.DefaultCredentialsPath()),
 		},
+	}
+
+	app.Before = func(_ *ucli.Context) error {
+		pterm.DisableColor()
+		return nil
 	}
 
 	app.Action = func(cc *ucli.Context) error {
