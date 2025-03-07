@@ -147,6 +147,26 @@ func TestDo(t *testing.T) {
 			err:    "resource was not found",
 		},
 		{
+			name: "error message as array",
+			mock: func() {
+				res := json.RawMessage(`{"message": ["resource was not found"]}`)
+				httpmock.RegisterResponder(http.MethodGet, testHost+"/req",
+					httpmock.NewJsonResponderOrPanic(http.StatusNotFound, res))
+			},
+			status: http.StatusNotFound,
+			err:    "resource was not found",
+		},
+		{
+			name: "failed to parse error message as int",
+			mock: func() {
+				res := json.RawMessage(`{"message": 1000}`)
+				httpmock.RegisterResponder(http.MethodGet, testHost+"/req",
+					httpmock.NewJsonResponderOrPanic(http.StatusNotFound, res))
+			},
+			status: http.StatusInternalServerError,
+			err:    "unable to parse message, invalid value type",
+		},
+		{
 			name: "closed response",
 			mock: func() {
 				res := &http.Response{

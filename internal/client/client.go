@@ -13,6 +13,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/faabiosr/imt/internal/errors"
 )
@@ -106,6 +107,27 @@ func (c *Client) Do(req *http.Request, value any) (err error) {
 	)
 }
 
+type message string
+
+func (m *message) UnmarshalJSON(b []byte) error {
+	var msg string
+
+	if err := json.Unmarshal(b, &msg); err == nil {
+		*m = message(msg)
+		return nil
+	}
+
+	var msgs []string
+
+	if err := json.Unmarshal(b, &msgs); err != nil {
+		return errors.New("unable to parse message, invalid value type")
+	}
+
+	*m = message(strings.Join(msgs, ","))
+
+	return nil
+}
+
 // checkResponse checks the API response for errors and returns them if present.
 func (c *Client) checkResponse(res *http.Response) error {
 	if c := res.StatusCode; c >= 200 && c <= 299 {
@@ -113,7 +135,7 @@ func (c *Client) checkResponse(res *http.Response) error {
 	}
 
 	errRes := struct {
-		Message string `json:"message"`
+		Message message `json:"message"`
 	}{}
 
 	data, err := io.ReadAll(res.Body)
@@ -129,7 +151,7 @@ func (c *Client) checkResponse(res *http.Response) error {
 		return errors.HTTP(http.StatusInternalServerError, err)
 	}
 
-	return errors.HTTP(res.StatusCode, errRes.Message)
+	return errors.HTTP(res.StatusCode, string(errRes.Message))
 }
 
 // netError verifies if error is related with network.
