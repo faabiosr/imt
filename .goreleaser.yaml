@@ -40,7 +40,7 @@ archives:
   - id: imt
     formats:
       - tar.gz
-    builds:
+    ids:
       - imt
     name_template: >-
       {{ .ProjectName }}_
@@ -63,7 +63,7 @@ archives:
 
 nfpms:
   - id: imt
-    builds:
+    ids:
       - imt
     package_name: imt
     file_name_template: >-
