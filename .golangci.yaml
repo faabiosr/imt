@@ -3,7 +3,8 @@ run:
   timeout: "120s"
 
 output:
-  formats: "colored-line-number"
+  formats:
+    - format: "colored-line-number"
 
 linters:
   enable:
