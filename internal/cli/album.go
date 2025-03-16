@@ -6,11 +6,16 @@
 package cli
 
 import (
+	"context"
 	"io/fs"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/faabiosr/imt/internal/client"
 )
 
 // AutoCreateAlbumOptions handles the options to auto create albums.
@@ -22,6 +27,47 @@ type AutoCreateAlbumsOptions struct {
 	Exclude           []string          `json:"exclude,omitempty"`
 	ParentGroupAssets bool              `json:"parent_group_assets"`
 	Albums            map[string]string `json:"albums,omitempty"`
+}
+
+// album represents an album stored in Immich.
+type album struct {
+	ID   string `json:"id"`
+	Name string `json:"albumName"`
+}
+
+// albums represents a collection of albums.
+type albums []album
+
+// createAlbum creates an album with name.
+func createAlbum(ctx context.Context, cl *client.Client, name string) (album, error) {
+	resource, _ := url.Parse("/api/albums")
+
+	body := map[string]string{
+		"albumName": name,
+	}
+
+	a := album{}
+
+	req, err := cl.NewRequest(ctx, http.MethodPost, resource, body)
+	if err != nil {
+		return a, err
+	}
+
+	return a, cl.Do(req, &a)
+}
+
+// fetchAlbums returns all albums stored.
+func fetchAlbums(ctx context.Context, cl *client.Client) (albums, error) {
+	resource, _ := url.Parse("/api/albums")
+
+	var as albums
+
+	req, err := cl.NewRequest(ctx, http.MethodGet, resource, nil)
+	if err != nil {
+		return as, err
+	}
+
+	return as, cl.Do(req, &as)
 }
 
 // excludeFilter apply a glob/regexp filter to remove folders path.
@@ -102,6 +148,10 @@ func groupAlbums(opts *AutoCreateAlbumsOptions) (map[string][]string, error) {
 		}
 
 		for _, s := range segments {
+			if v, ok := opts.Albums[s]; ok {
+				s = v
+			}
+
 			if _, ok := albums[s]; !ok {
 				albums[s] = append(albums[s], path)
 				return nil
