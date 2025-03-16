@@ -156,7 +156,7 @@ func TestAsset_fetchAssetsIDsByOriginalPaths(t *testing.T) {
 
 		ids, err := fetchAssetsIDsByOriginalPaths(ctx, cl, paths)
 		if err != nil {
-			t.Error(err)
+			t.Errorf("expected nil, got %v", err)
 		}
 
 		if n := len(ids); n != 2 {
