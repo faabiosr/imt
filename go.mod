@@ -7,6 +7,7 @@ require (
 	github.com/jarcoal/httpmock v1.3.1
 	github.com/pterm/pterm v0.12.80
 	github.com/urfave/cli/v2 v2.27.5
+	golang.org/x/sync v0.12.0
 )
 
 require (
