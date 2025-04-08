@@ -14,6 +14,17 @@ Immich is a great tool for managing photos, however when you have a big collecti
 
 ## :dart: Installation
 
+### Unix-like
+
+#### Manual installation
+```sh
+# by default will install into ~/.local/bin folder.
+curl -sSL https://raw.githubusercontent.com/faabiosr/imt/main/install.sh | bash 
+
+# install into /usr/local/bin
+curl -sSL https://raw.githubusercontent.com/faabiosr/imt/main/install.sh | sudo INSTALL_PATH=/usr/local/bin bash
+```
+
 ### go
 ```sh
 go install github.com/faabiosr/imt@latest
