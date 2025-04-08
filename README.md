@@ -1,4 +1,4 @@
-# imt - Immich tools
+# imt
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/faabiosr/imt/test.yaml?logo=github&style=flat-square)](https://github.com/faabiosr/imt/actions?query=workflow:test)
 [![Codecov branch](https://img.shields.io/codecov/c/github/faabiosr/imt/master.svg?style=flat-square)](https://codecov.io/gh/faabiosr/imt)
@@ -6,9 +6,45 @@
 [![Release](https://img.shields.io/github/v/release/faabiosr/imt?display_name=tag&style=flat-square)](https://github.com/faabiosr/imt/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](https://github.com/faabiosr/imt/blob/master/LICENSE)
 
-A collection of command-line tools for Immich.
+## :tada: Overview
+A collection of command-line tools for [Immich](https://immich.app/).
 
-## Development
+## :relaxed: Motivation
+Immich is a great tool for managing photos, however when you have a big collection of pictures, it is hard to manage albums, especially if you a different way to organize like me.
+
+## :dart: Installation
+
+### go
+```sh
+go install github.com/faabiosr/imt@latest
+```
+
+## :gem: Usage
+
+### Login using Immich API Key (please generate one before use)
+```sh
+imt login http://your-immich-server
+```
+
+### Create albums based on folder structure
+```sh
+# will create albums for the folders inside the `/home/user/photos`.
+imt album auto-create /home/user/photos/
+
+# will create albums recursivelly for the folders inside the `/home/user/photos`.
+imt album auto-create --recursive /home/user/photos/
+
+# will create albums recursivelly and skip levels size for the folders inside the `/home/user/photos`.
+imt album auto-create --recursive --skip-levels 2 -/home/user/photos/
+
+# will create albums from config file.
+imt album auto-create --from-config example_auto_create.json
+
+# for more option please run:
+imt album auto-create -h
+```
+
+## :toolbox: Development
 
 ### Requirements
 
@@ -24,6 +60,6 @@ Please run the make target below to see the provided targets.
 $ make help
 ```
 
-## License
+## :page_with_curl: License
 
 This project is released under the MIT licence. See [LICENSE](https://github.com/faabiosr/imt/blob/master/LICENSE) for more details.
