@@ -7,12 +7,14 @@ package cli
 
 import (
 	"context"
+	"fmt"
 	"io/fs"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/faabiosr/imt/internal/client"
@@ -37,6 +39,57 @@ type album struct {
 
 // albums represents a collection of albums.
 type albums []album
+
+// AutoCreateAlbums will create albums based on folders.
+func AutoCreateAlbums(ctx context.Context, cl *client.Client, opts *AutoCreateAlbumsOptions) error {
+	groups, err := groupAlbums(opts)
+	if err != nil {
+		return err
+	}
+
+	if len(groups) == 0 {
+		return nil
+	}
+
+	as, err := fetchAlbums(ctx, cl)
+	if err != nil {
+		return err
+	}
+
+	items := make(map[string][]string)
+
+	for name, folders := range groups {
+		i := slices.IndexFunc(as, func(a album) bool {
+			return a.Name == name
+		})
+
+		if i >= 0 {
+			items[as[i].ID] = append(items[as[i].ID], folders...)
+			continue
+		}
+
+		a, err := createAlbum(ctx, cl, name)
+		if err != nil {
+			return err
+		}
+
+		items[a.ID] = folders
+		as = append(as, a)
+	}
+
+	for id, paths := range items {
+		assets, err := fetchAssetsIDsByOriginalPaths(ctx, cl, paths)
+		if err != nil {
+			return err
+		}
+
+		if err := addAssetsToAlbum(ctx, cl, id, assets); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 // createAlbum creates an album with name.
 func createAlbum(ctx context.Context, cl *client.Client, name string) (album, error) {
@@ -68,6 +121,21 @@ func fetchAlbums(ctx context.Context, cl *client.Client) (albums, error) {
 	}
 
 	return as, cl.Do(req, &as)
+}
+
+// addAssetsToAlbum adds a list of assets into an album.
+func addAssetsToAlbum(ctx context.Context, cl *client.Client, id string, assets []string) error {
+	resource, _ := url.Parse(fmt.Sprintf("/api/albums/%s/assets", id))
+	body := map[string]any{
+		"ids": assets,
+	}
+
+	req, err := cl.NewRequest(ctx, http.MethodPut, resource, body)
+	if err != nil {
+		return err
+	}
+
+	return cl.Do(req, nil)
 }
 
 // excludeFilter apply a glob/regexp filter to remove folders path.
@@ -114,7 +182,7 @@ func groupAlbums(opts *AutoCreateAlbumsOptions) (map[string][]string, error) {
 		return albums, err
 	}
 
-	filepath.WalkDir(folder, func(path string, d fs.DirEntry, err error) error {
+	err = filepath.WalkDir(folder, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -163,5 +231,5 @@ func groupAlbums(opts *AutoCreateAlbumsOptions) (map[string][]string, error) {
 		return nil
 	})
 
-	return albums, nil
+	return albums, err
 }
