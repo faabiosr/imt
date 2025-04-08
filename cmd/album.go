@@ -6,6 +6,9 @@
 package cmd
 
 import (
+	"encoding/json"
+	"os"
+
 	ucli "github.com/urfave/cli/v2"
 
 	"github.com/faabiosr/imt/internal/cli"
@@ -43,8 +46,22 @@ var autoCreateAlbums = &ucli.Command{
 			Name:  "rename",
 			Usage: "set a key/value album to be renamed",
 		},
+		&ucli.StringFlag{
+			Name:  "from-config",
+			Usage: "load parameters from config file",
+		},
 	},
 	Action: withClient(func(cc *ucli.Context, cl *client.Client) error {
+		cfg := cc.String("from-config")
+		if cfg != "" {
+			opts, err := loadAutoCreateConfigFile(cfg)
+			if err != nil {
+				return err
+			}
+
+			return autoCreateAlbumsAction(cc, cl, opts)
+		}
+
 		if cc.Args().Len() != 1 {
 			return errors.New("Empty path is not allowed")
 		}
@@ -63,17 +80,33 @@ var autoCreateAlbums = &ucli.Command{
 			Albums:       albums,
 		}
 
-		spin, err := spinner(cc.App.Writer, "creating albums...").Start()
-		if err != nil {
-			return err
-		}
-
-		if err := cli.AutoCreateAlbums(cc.Context, cl, opts); err != nil {
-			return err
-		}
-
-		_ = spin.Stop()
-
-		return nil
+		return autoCreateAlbumsAction(cc, cl, opts)
 	}),
+}
+
+func autoCreateAlbumsAction(cc *ucli.Context, cl *client.Client, opts *cli.AutoCreateAlbumsOptions) error {
+	spin, err := spinner(cc.App.Writer, "creating albums...").Start()
+	if err != nil {
+		return err
+	}
+
+	if err := cli.AutoCreateAlbums(cc.Context, cl, opts); err != nil {
+		return err
+	}
+
+	return spin.Stop()
+}
+
+func loadAutoCreateConfigFile(name string) (*cli.AutoCreateAlbumsOptions, error) {
+	if name == "" {
+		return nil, errors.New("empty filename is not allowed")
+	}
+
+	content, err := os.ReadFile(name)
+	if err != nil {
+		return nil, errors.Errorf("unable to read auto create albums config file: %w", err)
+	}
+
+	var opts cli.AutoCreateAlbumsOptions
+	return &opts, json.Unmarshal(content, &opts)
 }

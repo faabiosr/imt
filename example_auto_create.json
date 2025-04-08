@@ -1,0 +1,13 @@
+{
+  "folder": "/home/user/photos/2025/",
+  "recursive": true,
+  "skip_levels": 3,
+  "original_path": "/external-media/2025/",
+  "exclude": [
+    "/No_Category/*"
+  ],
+  "albums": {
+    "Ana_Dias": "Ana Dias",
+    "Company_Summit": "Company Summit"
+  }
+}
