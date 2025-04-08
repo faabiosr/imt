@@ -8,7 +8,9 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/pterm/pterm"
 	ucli "github.com/urfave/cli/v2"
@@ -106,7 +108,7 @@ func newCmd() *ucli.App {
 		return nil
 	}
 
-	app.Commands = commands(loginCmd, logoutCmd, infoCmd)
+	app.Commands = commands(loginCmd, logoutCmd, infoCmd, albumCmd)
 
 	return app
 }
@@ -149,4 +151,34 @@ func withClient(fn action) ucli.ActionFunc {
 
 		return fn(cc, cl)
 	}
+}
+
+const kvSize = 2
+
+// pairs reads flag string slice as a key/value pairs.
+func pairs(cc *ucli.Context, name string) (map[string]string, error) {
+	items := cc.StringSlice(name)
+
+	m := make(map[string]string, len(items))
+
+	for _, pair := range items {
+		kv := strings.SplitN(pair, "=", kvSize)
+		if len(kv) != kvSize {
+			return m, fmt.Errorf("%s '%s' must be formatted as key=value", name, pair)
+		}
+
+		m[kv[0]] = kv[1]
+	}
+
+	return m, nil
+}
+
+// spinner creates pterm spinner.
+func spinner(w io.Writer, text string) *pterm.SpinnerPrinter {
+	return pterm.DefaultSpinner.
+		WithSequence([]string{"⣾ ", "⣽ ", "⣻ ", "⢿ ", "⡿ ", "⣟ ", "⣯ ", "⣷ "}...).
+		WithText(text).
+		WithShowTimer(false).
+		WithRemoveWhenDone(true).
+		WithWriter(w)
 }
