@@ -8,7 +8,9 @@ package cmd
 import (
 	"encoding/json"
 	"os"
+	"strconv"
 
+	"github.com/pterm/pterm"
 	ucli "github.com/urfave/cli/v2"
 
 	"github.com/faabiosr/imt/internal/cli"
@@ -19,7 +21,7 @@ import (
 var albumCmd = &ucli.Command{
 	Name:        "album",
 	Description: "Manages albums",
-	Subcommands: commands(autoCreateAlbums),
+	Subcommands: commands(autoCreateAlbums, listAlbums),
 }
 
 var autoCreateAlbums = &ucli.Command{
@@ -109,4 +111,28 @@ func loadAutoCreateConfigFile(name string) (*cli.AutoCreateAlbumsOptions, error)
 
 	var opts cli.AutoCreateAlbumsOptions
 	return &opts, json.Unmarshal(content, &opts)
+}
+
+var listAlbums = &ucli.Command{
+	Name:        "list",
+	Description: "list albums stored",
+	Action: withClient(func(cc *ucli.Context, cl *client.Client) error {
+		albums, err := cli.FetchAlbums(cc.Context, cl)
+		if err != nil {
+			return err
+		}
+
+		data := pterm.TableData{
+			{"ID", "NAME", "NUMBER OF ASSETS"},
+		}
+
+		for _, album := range albums {
+			data = append(data, []string{album.ID, album.Name, strconv.FormatInt(album.AssetCount, 10)})
+		}
+
+		return pterm.DefaultTable.
+			WithHasHeader().
+			WithData(data).
+			Render()
+	}),
 }

@@ -42,6 +42,11 @@ imt login http://your-immich-server
 imt logout
 ```
 
+### List albums 
+```sh
+imt album list
+```
+
 ### Create albums based on folder structure
 ```sh
 # will create albums for the folders inside the `/home/user/photos`.

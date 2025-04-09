@@ -31,14 +31,15 @@ type AutoCreateAlbumsOptions struct {
 	Albums            map[string]string `json:"albums,omitempty"`
 }
 
-// album represents an album stored in Immich.
-type album struct {
-	ID   string `json:"id"`
-	Name string `json:"albumName"`
+// Album represents an Album stored in Immich.
+type Album struct {
+	ID         string `json:"id"`
+	Name       string `json:"albumName"`
+	AssetCount int64  `json:"assetCount"`
 }
 
-// albums represents a collection of albums.
-type albums []album
+// Albums represents a collection of Albums.
+type Albums []Album
 
 // AutoCreateAlbums will create albums based on folders.
 func AutoCreateAlbums(ctx context.Context, cl *client.Client, opts *AutoCreateAlbumsOptions) error {
@@ -51,7 +52,7 @@ func AutoCreateAlbums(ctx context.Context, cl *client.Client, opts *AutoCreateAl
 		return nil
 	}
 
-	as, err := fetchAlbums(ctx, cl)
+	as, err := FetchAlbums(ctx, cl)
 	if err != nil {
 		return err
 	}
@@ -59,7 +60,7 @@ func AutoCreateAlbums(ctx context.Context, cl *client.Client, opts *AutoCreateAl
 	items := make(map[string][]string)
 
 	for name, folders := range groups {
-		i := slices.IndexFunc(as, func(a album) bool {
+		i := slices.IndexFunc(as, func(a Album) bool {
 			return a.Name == name
 		})
 
@@ -92,14 +93,14 @@ func AutoCreateAlbums(ctx context.Context, cl *client.Client, opts *AutoCreateAl
 }
 
 // createAlbum creates an album with name.
-func createAlbum(ctx context.Context, cl *client.Client, name string) (album, error) {
+func createAlbum(ctx context.Context, cl *client.Client, name string) (Album, error) {
 	resource, _ := url.Parse("/api/albums")
 
 	body := map[string]string{
 		"albumName": name,
 	}
 
-	a := album{}
+	a := Album{}
 
 	req, err := cl.NewRequest(ctx, http.MethodPost, resource, body)
 	if err != nil {
@@ -109,11 +110,11 @@ func createAlbum(ctx context.Context, cl *client.Client, name string) (album, er
 	return a, cl.Do(req, &a)
 }
 
-// fetchAlbums returns all albums stored.
-func fetchAlbums(ctx context.Context, cl *client.Client) (albums, error) {
+// FetchAlbums returns all albums stored.
+func FetchAlbums(ctx context.Context, cl *client.Client) (Albums, error) {
 	resource, _ := url.Parse("/api/albums")
 
-	var as albums
+	var as Albums
 
 	req, err := cl.NewRequest(ctx, http.MethodGet, resource, nil)
 	if err != nil {
