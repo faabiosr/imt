@@ -37,6 +37,11 @@ go install github.com/faabiosr/imt@latest
 imt login http://your-immich-server
 ```
 
+### Logout (remove the stored credentials)
+```sh
+imt logout
+```
+
 ### Create albums based on folder structure
 ```sh
 # will create albums for the folders inside the `/home/user/photos`.
@@ -53,6 +58,12 @@ imt album auto-create --from-config example_auto_create.json
 
 # for more option please run:
 imt album auto-create -h
+```
+
+### Server info
+```sh
+# Shows server info
+imt info
 ```
 
 ## :toolbox: Development
